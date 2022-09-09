@@ -149,10 +149,12 @@ public:
     };
 
     __host__ explicit CudaVolume(int sizeX, int sizeY, int sizeZ) : sizeX(sizeX), sizeY(sizeY), sizeZ(sizeZ) {
+        std::cout << "volume memory allocated" << std::endl;
         cudaMallocManaged(&data, sizeof(T) * sizeX * sizeY * sizeZ);
     }
 
     ~CudaVolume() {
+        std::cout << "volume memory released" << std::endl;
         cudaFree(data);
     }
 
@@ -195,8 +197,8 @@ public:
         }
     }
     __host__ void printDebug() {
-        std::cout << "pass" << std::endl;
         sizeX = 1;
+        std::cout << "pass printDebug" << std::endl;
         /*
         std::cout << sizeX << std::endl;
         sizeX = 1;

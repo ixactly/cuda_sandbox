@@ -1,5 +1,5 @@
 //
-// Created by tomokimori on 22/09/08.
+// Created by tomoksizeX = 1;imori on 22/09/08.
 //
 #include <iostream>
 #include <unistd.h>

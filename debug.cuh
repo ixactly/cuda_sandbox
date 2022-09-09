@@ -22,9 +22,16 @@ public :
     cuda_ptr() = default;
 
     explicit cuda_ptr(T *ptr)
-            : ptr(ptr) {}
+            : ptr(ptr) {
+        cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
+        std::cout << "cuda_ptr " << typeid(T).name() << "* allocated" << std::endl;
+    }
 
-    ~cuda_ptr() { cudaFree(ptr); }
+    ~cuda_ptr() {
+        std::cout << "cuda_ptr released" << std::endl;
+        cudaFree(ptr);
+        delete ptr;
+    }
 
     cuda_ptr(const cuda_ptr &) = delete;
 
@@ -34,9 +41,12 @@ public :
             : ptr(r.ptr) { r.ptr = nullptr; }
 
     cuda_ptr &operator=(cuda_ptr &&r) noexcept {
-        delete ptr;
+        cudaFree(ptr);
         ptr = r.ptr;
         r.ptr = nullptr;
+        cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
+        std::cout << "malloc by move constructor" << std::endl;
+        return *this;
     }
 
     T &operator*() noexcept { return *ptr; }
