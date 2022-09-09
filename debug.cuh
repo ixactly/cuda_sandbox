@@ -12,6 +12,8 @@ __device__ void bar();
 
 __global__ void foo(CudaVolume<float> *vol);
 
+__global__ void hoge();
+
 template<typename T>
 class cuda_ptr {
 private :
