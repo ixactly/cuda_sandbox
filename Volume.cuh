@@ -142,20 +142,21 @@ private :
 
 
 template<typename T>
-class CudaVolume {
+class cudaVolume {
 public:
-    CudaVolume() {
+    cudaVolume() {
         std::cout << "default con\n";
     };
 
-    __host__ explicit CudaVolume(int sizeX, int sizeY, int sizeZ) : sizeX(sizeX), sizeY(sizeY), sizeZ(sizeZ) {
-        std::cout << "volume memory allocated" << std::endl;
-        cudaMallocManaged(&data, sizeof(T) * sizeX * sizeY * sizeZ);
+    __host__ explicit cudaVolume(int sizeX, int sizeY, int sizeZ) : sizeX(sizeX), sizeY(sizeY), sizeZ(sizeZ) {
+        cudaMalloc(&data, sizeof(T) * sizeX * sizeY * sizeZ);
+        std::cout << "volume memory allocated, ptr: " << data << std::endl;
     }
 
-    ~CudaVolume() {
-        std::cout << "volume memory released" << std::endl;
+    ~cudaVolume() {
+        std::cout << "volume memory releasing, ptr: " << data << std::endl;
         cudaFree(data);
+        std::cout << "volume memory released, ptr: " << data << std::endl;
     }
 
     __device__ __host__ T &operator()(int x, int y, int z) {
@@ -176,7 +177,9 @@ public:
         sizeX = x;
         sizeY = y;
         sizeZ = z;
+        std::cout << "init" << std::endl;
         cudaMallocManaged(&data, sizeof(T) * sizeX * sizeY * sizeZ);
+        std::cout << data[1] << std::endl;
     }
 
     __host__ void copyToHostData(T *dstPtr) const {
@@ -210,7 +213,6 @@ private:
     int sizeX;
     int sizeY;
     int sizeZ;
-
     T *data = nullptr;
 };
 

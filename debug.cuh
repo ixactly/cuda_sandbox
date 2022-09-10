@@ -10,7 +10,7 @@
 
 __device__ void bar();
 
-__global__ void foo(CudaVolume<float> *vol);
+__global__ void foo(cudaVolume<float> *vol);
 
 __global__ void hoge();
 
@@ -24,13 +24,15 @@ public :
     explicit cuda_ptr(T *ptr)
             : ptr(ptr) {
         cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
-        std::cout << "cuda_ptr " << typeid(T).name() << "* allocated" << std::endl;
+        std::cout << "cuda_ptr " << typeid(T).name() << "* cuda mem allocated, ptr: " << ptr << std::endl;
     }
 
     ~cuda_ptr() {
-        std::cout << "cuda_ptr released" << std::endl;
+        std::cout << "cuda_ptr " << typeid(T).name() << "* cudaFree of, ptr: " << ptr << std::endl;
         cudaFree(ptr);
+        std::cout << "cuda_ptr " << typeid(T).name() << "* delete of, ptr: " << ptr << std::endl;
         delete ptr;
+        std::cout << "cuda_ptr " << typeid(T).name() << "* released of, ptr: " << ptr << std::endl;
     }
 
     cuda_ptr(const cuda_ptr &) = delete;
@@ -38,14 +40,18 @@ public :
     cuda_ptr &operator=(const cuda_ptr &) = delete;
 
     cuda_ptr(cuda_ptr &&r) noexcept
-            : ptr(r.ptr) { r.ptr = nullptr; }
+            : ptr(r.ptr) {
+        std::cout << "malloc by move constructor, ptr: " << r.ptr << std::endl;
+        r.ptr = nullptr;
+    }
 
     cuda_ptr &operator=(cuda_ptr &&r) noexcept {
-        cudaFree(ptr);
+        std::cout << "malloc by move assignment, ptr: " << r.ptr << std::endl;
         ptr = r.ptr;
+        std::cout << "move assigned, ptr: " << ptr << std::endl;
         r.ptr = nullptr;
         cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
-        std::cout << "malloc by move constructor" << std::endl;
+
         return *this;
     }
 

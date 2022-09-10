@@ -8,7 +8,7 @@
 __device__ void bar() {
 }
 
-__global__ void foo(CudaVolume<float>* vol) {
+__global__ void foo(cudaVolume<float>* vol) {
     // printf("%d, %d\n", blockIdx.x, threadIdx.x);
     (*vol)(1, 1, 1) = 3.0f;
     printf("%lf", (*vol)(1, 1, 1));
