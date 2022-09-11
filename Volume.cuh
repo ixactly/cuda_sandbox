@@ -149,13 +149,14 @@ public:
     };
 
     __host__ explicit cudaVolume(int sizeX, int sizeY, int sizeZ) : sizeX(sizeX), sizeY(sizeY), sizeZ(sizeZ) {
-        cudaMalloc(&data, sizeof(T) * sizeX * sizeY * sizeZ);
+        cudaMallocManaged(&data, sizeof(T) * sizeX * sizeY * sizeZ);
         std::cout << "volume memory allocated, ptr: " << data << std::endl;
     }
 
     ~cudaVolume() {
         std::cout << "volume memory releasing, ptr: " << data << std::endl;
         cudaFree(data);
+        data = nullptr;
         std::cout << "volume memory released, ptr: " << data << std::endl;
     }
 
@@ -171,15 +172,6 @@ public:
         size[0] = sizeX;
         size[1] = sizeY;
         size[2] = sizeZ;
-    }
-
-    __host__ void init(int x, int y, int z) {
-        sizeX = x;
-        sizeY = y;
-        sizeZ = z;
-        std::cout << "init" << std::endl;
-        cudaMallocManaged(&data, sizeof(T) * sizeX * sizeY * sizeZ);
-        std::cout << data[1] << std::endl;
     }
 
     __host__ void copyToHostData(T *dstPtr) const {
@@ -202,6 +194,7 @@ public:
     __host__ void printDebug() {
         sizeX = 1;
         std::cout << "pass printDebug" << std::endl;
+        std::cout << sizeX << std::endl;
         /*
         std::cout << sizeX << std::endl;
         sizeX = 1;

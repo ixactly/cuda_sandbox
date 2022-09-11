@@ -49,29 +49,30 @@ int main() {
         std::cout << *(floating) << std::endl;
          */
 
+        cuda_ptr<cudaVolume<float>> vol[1];
+        for (auto &e: vol) {
+            e = make_cudaptr<cudaVolume<float>>(1000, 1000, 1000);
+            sleep(5.0);// nullptr
+        }
+        // std::cout << floating.get() << std::endl;
+        vol[0]->printDebug();
+        // vol[0]->forEach([](float val) -> float { return 1.0; });
+        std::cout << (*vol[0])(1, 1, 1) << std::endl;
+        std::cout << "lvalue ptr: " << vol[0].get() << std::endl;
 
-        cuda_ptr<float> floating = make_cudaptr<float>(5.0f);; // nullptr
-
-        std::cout << "lvalue ptr: " << floating.get() << std::endl;
-
-        // floating = cuda_ptr<float>(tmp); // issue
-
-        std::cout << "lvalue after assigned, ptr: " << floating.get() << std::endl;
         // dainyuu to dainyuu constructor de kekka ga tigau
-        // cuda_ptr<cudaVolume<float>> single = cuda_ptr<cudaVolume<float>>(new cudaVolume<float>(1000, 1000, 1000));;
 
         // cuda_ptr<cudaVolume<float>> single;
-        // single = cuda_ptr<cudaVolume<float>>(new cudaVolume<float>(1000, 1000, 1000));
+        // std::cout << (*vol[1])(1,1,1) << std::endl;
+        std::cout << (*vol[0])(1, 1, 1) << std::endl;
 
-        /*
-        for (auto &e : single) {
-         // e = cuda_ptr<cudaVolume<float>>(new cudaVolume<float>(1000, 1000, 1000));
-        }
-        */
+        dim3 block(5, 1, 1);
+        dim3 grid(5, 1, 1);
+
+        foo<<<1, 1>>>(vol[0].get());
+        hoge<<<1, 1>>>();
         cudaDeviceSynchronize();
-        sleep(5);
     }
-
 
     return 0;
 }

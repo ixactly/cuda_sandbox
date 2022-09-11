@@ -7,7 +7,7 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-
+#include <unistd.h>
 __device__ void bar();
 
 __global__ void foo(cudaVolume<float> *vol);
@@ -31,7 +31,10 @@ public :
 
     ~cuda_ptr() {
         std::cout << "cuda_ptr " << typeid(T).name() << "* calling destructor of T, ptr: " << ptr << std::endl;
-        (*ptr).~T();
+        if (ptr != nullptr)
+            (*ptr).~T();
+        else
+            std::cout << "denied calling destructor\n";
 
         std::cout << "cuda_ptr " << typeid(T).name() << "* cudaFree of, ptr: " << ptr << std::endl;
         cudaFree(ptr);
@@ -68,16 +71,18 @@ public :
 
 template <class T, class... Args>
 cuda_ptr<T> make_cudaptr(Args&&... args) {
-    std::cout << "in make_cuda" << std::endl;
+    T* dst;
+    T* src = new T(std::forward<Args>(args)...); // cannot delete this memory
 
-    T* ptr;
-    T tmp(std::forward<Args>(args)...);
-    cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
-    std::memcpy(ptr, &tmp, sizeof(T));
+    cudaMallocManaged(reinterpret_cast<void **>(&dst), sizeof(T));
+    std::memcpy(dst, src, sizeof(T));
 
+    std::cout << "in make_cuda, ptr: " << dst << std::endl;
+    free(src);
+    std::cout << "alloc src, free, ptr: " << src << std::endl;
     std::cout << "make_cuda out" << std::endl;
 
-    return cuda_ptr<T>(ptr);
+    return cuda_ptr<T>(dst);
 }
 
 #endif //CUDA_SANDBOX_DEBUG_CUH
