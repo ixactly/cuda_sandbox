@@ -50,12 +50,11 @@ int main() {
          */
 
 
-        cuda_ptr<float> floating; // nullptr
-        auto tmp = new float (5.0f);
-        std::cout << "rvalue ptr: " << tmp << std::endl;
+        cuda_ptr<float> floating = make_cudaptr<float>(5.0f);; // nullptr
+
         std::cout << "lvalue ptr: " << floating.get() << std::endl;
 
-        floating = cuda_ptr<float>(tmp); // issue
+        // floating = cuda_ptr<float>(tmp); // issue
 
         std::cout << "lvalue after assigned, ptr: " << floating.get() << std::endl;
         // dainyuu to dainyuu constructor de kekka ga tigau
@@ -70,9 +69,8 @@ int main() {
         }
         */
         cudaDeviceSynchronize();
-        sleep(2);
+        sleep(5);
     }
-    sleep(5);
 
 
     return 0;

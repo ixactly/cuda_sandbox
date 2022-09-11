@@ -21,18 +21,20 @@ private :
 public :
     cuda_ptr() = default;
 
-    explicit cuda_ptr(T *ptr)
-            : ptr(ptr) {
-        cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
-        std::cout << "cuda_ptr " << typeid(T).name() << "* cuda mem allocated, ptr: " << ptr << std::endl;
+    explicit cuda_ptr(T *r_ptr)
+            : ptr(r_ptr) {
+        std::cout << "cuda_ptr " << typeid(T).name() << "* cuda mem allocated, rvalue ptr: " << r_ptr << std::endl;
+        std::cout << "cuda_ptr " << typeid(T).name() << "* cuda mem allocated, lvalue ptr: " << ptr << std::endl;
+
+        // !!! cudaMalloc -> change ptr adress
     }
 
     ~cuda_ptr() {
+        std::cout << "cuda_ptr " << typeid(T).name() << "* calling destructor of T, ptr: " << ptr << std::endl;
+        (*ptr).~T();
+
         std::cout << "cuda_ptr " << typeid(T).name() << "* cudaFree of, ptr: " << ptr << std::endl;
         cudaFree(ptr);
-        std::cout << "cuda_ptr " << typeid(T).name() << "* delete of, ptr: " << ptr << std::endl;
-        delete ptr;
-        std::cout << "cuda_ptr " << typeid(T).name() << "* released of, ptr: " << ptr << std::endl;
     }
 
     cuda_ptr(const cuda_ptr &) = delete;
@@ -46,11 +48,11 @@ public :
     }
 
     cuda_ptr &operator=(cuda_ptr &&r) noexcept {
-        std::cout << "malloc by move assignment, ptr: " << r.ptr << std::endl;
+        std::cout << "malloc by move assignment, rvalue ptr: " << r.ptr << std::endl;
+        std::cout << "malloc by move assignment, lvalue ptr: " << ptr << std::endl;
         ptr = r.ptr;
         std::cout << "move assigned, ptr: " << ptr << std::endl;
         r.ptr = nullptr;
-        cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
 
         return *this;
     }
@@ -63,5 +65,19 @@ public :
 
     T *get() noexcept { return ptr; }
 };
+
+template <class T, class... Args>
+cuda_ptr<T> make_cudaptr(Args&&... args) {
+    std::cout << "in make_cuda" << std::endl;
+
+    T* ptr;
+    T tmp(std::forward<Args>(args)...);
+    cudaMallocManaged(reinterpret_cast<void **>(&ptr), sizeof(T));
+    std::memcpy(ptr, &tmp, sizeof(T));
+
+    std::cout << "make_cuda out" << std::endl;
+
+    return cuda_ptr<T>(ptr);
+}
 
 #endif //CUDA_SANDBOX_DEBUG_CUH
